@@ -2,43 +2,9 @@
 #![no_std]
 // disable all Rust-level entry points
 #![no_main]
-// custom test framework
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(philopp::test_runner)]
 #![reexport_test_harness_main = "test_main"]
-
-pub trait Testable {
-    fn run(&self) -> ();
-}
-
-impl<T> Testable for T
-where
-    T: Fn(),
-{
-    fn run(&self) -> () {
-        serial_prinln!("{}...\t", core::any::type_name::<T>());
-        self();
-        serial_prinln!("[ok]");
-    }
-}
-
-// including it only for tests
-#[cfg(test)]
-fn test_runner(tests: &[&dyn Testable]) {
-    serial_prinln!("Running {} tests", tests.len());
-    for test in tests {
-        test.run();
-    }
-    exit_qemu(QemuExitCode::Success);
-}
-
-#[test_case]
-fn trivial_assertion() {
-    print!("trivial assertion... ");
-    assert_eq!(1, 1);
-    serial_prinln!("trivial assertion... [ok]");
-    // loop {}
-}
 
 mod serial;
 mod vga_buffer;
@@ -48,22 +14,10 @@ use core::panic::PanicInfo;
 // static HELLO: &[u8] = b"Hello World!";
 
 // our existing panic handler
-#[cfg(not(test))]
 #[panic_handler]
 // this funciton is called on panic
 fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    loop {}
-}
-
-// our panic handler in test mode
-#[cfg(test)]
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    serial_prinln!("[failed]\n");
-    serial_prinln!("Error: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-    loop {}
+    philopp::test_panic_handler(info)
 }
 
 // don't mangle the name of this function
@@ -105,18 +59,7 @@ pub extern "C" fn _start() -> ! {
     loop {}
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode {
-    Success = 0x10,
-    Failed = 0x11,
-}
-
-pub fn exit_qemu(exit_code: QemuExitCode) {
-    use x86_64::instructions::port::Port;
-
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
+#[test_case]
+fn one_eq_one() {
+    assert_eq!(1, 1);
 }
