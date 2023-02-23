@@ -51,6 +51,11 @@ pub extern "C" fn _start() -> ! {
 
     println!("custom println");
 
+    philopp::init();
+    x86_64::instructions::interrupts::int3();
+
+    println!("It did not crash!");
+
     // panic!("Some panic message!");
 
     #[cfg(test)]

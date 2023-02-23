@@ -1,10 +1,11 @@
 #![no_std]
 #![cfg_attr(test, no_main)]
 // custom test framework
-#![feature(custom_test_frameworks)]
+#![feature(custom_test_frameworks, abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
 
@@ -66,6 +67,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 #[cfg(test)]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init();
     test_main();
     loop {}
 }
@@ -76,4 +78,8 @@ fn trivial_assertion() {
     assert_eq!(1, 1);
     // serial_prinln!("trivial assertion...");
     // loop {}
+}
+
+pub fn init() {
+    interrupts::init_idt();
 }
