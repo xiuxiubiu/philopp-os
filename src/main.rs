@@ -17,7 +17,7 @@ use core::panic::PanicInfo;
 #[panic_handler]
 // this funciton is called on panic
 fn panic(info: &PanicInfo) -> ! {
-    philopp::test_panic_handler(info)
+    philopp::panic_handler(info)
 }
 
 // don't mangle the name of this function
@@ -53,6 +53,19 @@ pub extern "C" fn _start() -> ! {
 
     philopp::init();
     x86_64::instructions::interrupts::int3();
+
+    // #[allow(unconditional_recursion)]
+    // fn stack_overflow() {
+    //     // for each recursion, the return address is pushed
+    //     stack_overflow();
+    // }
+    // trigger a stack overflow
+    // stack_overflow();
+
+    // trigger a page fault
+    // unsafe {
+    //     *(0xdeadbeef as *mut u64) = 42;
+    // }
 
     println!("It did not crash!");
 

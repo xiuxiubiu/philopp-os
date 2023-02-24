@@ -5,6 +5,7 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod gdt;
 pub mod interrupts;
 pub mod serial;
 pub mod vga_buffer;
@@ -22,12 +23,12 @@ where
     fn run(&self) -> () {
         serial_print!("{}...\t", core::any::type_name::<T>());
         self();
-        serial_prinln!("[ok]");
+        serial_println!("[ok]");
     }
 }
 
 pub fn test_runner(tests: &[&dyn Testable]) {
-    serial_prinln!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test.run();
     }
@@ -42,8 +43,15 @@ fn panic(info: &PanicInfo) -> ! {
 }
 
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
-    serial_prinln!("[failed]\n");
-    serial_prinln!("Error: {}\n", info);
+    serial_println!("[failed]\n");
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
+    loop {}
+}
+
+pub fn panic_handler(info: &PanicInfo) -> ! {
+    println!("[failed]\n");
+    println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
     loop {}
 }
@@ -81,5 +89,6 @@ fn trivial_assertion() {
 }
 
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
