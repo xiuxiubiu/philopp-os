@@ -41,6 +41,7 @@ pub extern "C" fn _start() -> ! {
         .lock()
         .write_str("\nHello again!")
         .unwrap();
+
     write!(
         vga_buffer::WRITER.lock(),
         ", some numbers: {} {}\n",
@@ -69,12 +70,16 @@ pub extern "C" fn _start() -> ! {
 
     println!("It did not crash!");
 
+    // loop {
+    //     print!("-");
+    // }
+
     // panic!("Some panic message!");
 
     #[cfg(test)]
     test_main();
 
-    loop {}
+    philopp::halt_loop();
 }
 
 #[test_case]

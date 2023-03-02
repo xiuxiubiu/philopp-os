@@ -46,7 +46,9 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+
+    // loop {}
+    crate::halt_loop();
 }
 
 pub fn panic_handler(info: &PanicInfo) -> ! {
@@ -77,7 +79,9 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+
+    // loop {}
+    crate::halt_loop();
 }
 
 #[test_case]
@@ -91,4 +95,12 @@ fn trivial_assertion() {
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
+pub fn halt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }

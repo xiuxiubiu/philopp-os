@@ -28,7 +28,9 @@ extern "x86-interrupt" fn test_double_fault_handler(
 ) -> ! {
     serial_println!("[ok]");
     exit_qemu(philopp::QemuExitCode::Success);
-    loop {}
+
+    // loop {}
+    philopp::halt_loop();
 }
 
 #[no_mangle]
@@ -39,7 +41,9 @@ pub extern "x86-interrupt" fn _start() -> ! {
     TEST_IDT.load();
 
     test_main();
-    loop {}
+
+    // loop {}
+    philopp::halt_loop();
 }
 
 #[panic_handler]

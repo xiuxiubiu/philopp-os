@@ -11,7 +11,9 @@ use philopp::println;
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     test_main();
-    loop {}
+
+    // loop {}
+    philopp::halt_loop();
 }
 
 #[panic_handler]
