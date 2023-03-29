@@ -4,10 +4,11 @@ use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::{
     instructions::port::Port,
+    registers::control::Cr2,
     structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{gdt::DOUBLE_FAULT_IST_INDEX, print, println};
+use crate::{gdt::DOUBLE_FAULT_IST_INDEX, halt_loop, print, println};
 
 // hardware interrupts
 pub const PIC_1_OFFSET: u8 = 32;
@@ -77,10 +78,17 @@ extern "x86-interrupt" fn page_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: PageFaultErrorCode,
 ) {
-    println!(
-        "EXCEPTION: PAGE_FAULT\nERROR_CODE:\n{:#?}\n{:#?}",
-        error_code, stack_frame
-    );
+    // println!(
+    //     "EXCEPTION: PAGE_FAULT\nERROR_CODE:\n{:#?}\n{:#?}",
+    //     error_code, stack_frame
+    // );
+
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Error Code: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+
+    halt_loop();
 }
 
 // double fault exception handler

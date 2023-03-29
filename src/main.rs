@@ -11,6 +11,8 @@ mod vga_buffer;
 
 use core::panic::PanicInfo;
 
+use x86_64::registers::control::Cr3;
+
 // static HELLO: &[u8] = b"Hello World!";
 
 // our existing panic handler
@@ -69,6 +71,35 @@ pub extern "C" fn _start() -> ! {
     // }
 
     println!("It did not crash!");
+
+    // let ptr = 0xdeadeaf as *mut u32;
+    // unsafe {
+    //     *ptr = 42;
+    // }
+
+    // let ptr = 0x209730 as *mut u32;
+    //
+    // // read from a code page
+    // unsafe {
+    //     let _x = *ptr;
+    // }
+    // println!("read worked");
+    //
+    // // write to a code page
+    // unsafe {
+    //     *ptr = 42;
+    // }
+    // println!("write wroked");
+
+    let (level_4_page_table, _) = Cr3::read();
+    println!(
+        "Level 4 page table at: {:?}",
+        level_4_page_table.start_address()
+    );
+    serial_println!(
+        "Level 4 page table at: {:?}",
+        level_4_page_table.start_address()
+    );
 
     // loop {
     //     print!("-");
